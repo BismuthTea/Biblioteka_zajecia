@@ -54,3 +54,23 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+
+
+
+class Person(models.Model):
+    """Model reprezentujący osobę korzystającą z biblioteki."""
+    sex_choices = (
+        ('M', 'Mężczyzna'),
+        ('F', 'Kobieta'),
+        ('O', 'Inna'),
+    )
+    first_name = models.CharField(max_length=50, blank=False, null=False)
+    last_name = models.CharField(max_length=50, blank=False, null=False)
+    sex = models.CharField(max_length=1, choices=sex_choices, default='O')
+    position = models.ForeignKey('Position', on_delete=models.CASCADE)
+    entry_date = models.DateField(auto_now_add=True, editable=False)
+
+class Position(models.Model):
+    """Model reprezentujący stanowisko osoby w bibliotece."""
+    name = models.CharField(max_length=70, blank=False, null=False)
+    description = models.TextField(blank=True, null=True)
