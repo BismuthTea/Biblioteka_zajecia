@@ -55,20 +55,30 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
-
+PLCIE = models.IntegerChoices(
+    'Płeć',
+    'Mężczyzna Kobieta Inna'
+)
 
 class Person(models.Model):
     """Model reprezentujący osobę korzystającą z biblioteki."""
-    sex_choices = (
+    sex = (
         ('M', 'Mężczyzna'),
         ('F', 'Kobieta'),
-        ('O', 'Inna'),
+        ('O', 'Inna')
     )
+
     first_name = models.CharField(max_length=50, blank=False, null=False)
     last_name = models.CharField(max_length=50, blank=False, null=False)
-    sex = models.CharField(max_length=1, choices=sex_choices, default='O')
+    sex = models.IntegerField(choices=PLCIE.choices, default=PLCIE.choices[2][0])
     position = models.ForeignKey('Position', on_delete=models.CASCADE)
     entry_date = models.DateField(auto_now_add=True, editable=False)
+
+    def __str__(self):
+        return f"Person: {self.first_name} {self.last_name}"
+    
+    class Meta:
+        ordering = ['last_name', 'first_name']
 
 class Position(models.Model):
     """Model reprezentujący stanowisko osoby w bibliotece."""
