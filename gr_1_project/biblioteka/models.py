@@ -60,7 +60,7 @@ PLCIE = models.IntegerChoices(
     'Mężczyzna Kobieta Inna'
 )
 
-class Person(models.Model):
+class Osoba(models.Model):
     """Model reprezentujący osobę korzystającą z biblioteki."""
     sex = (
         ('M', 'Mężczyzna'),
@@ -71,7 +71,7 @@ class Person(models.Model):
     first_name = models.CharField(max_length=50, blank=False, null=False)
     last_name = models.CharField(max_length=50, blank=False, null=False)
     sex = models.IntegerField(choices=PLCIE.choices, default=PLCIE.choices[2][0])
-    position = models.ForeignKey('Position', on_delete=models.CASCADE)
+    Stanowisko = models.ForeignKey('Stanowisko', on_delete=models.CASCADE)
     entry_date = models.DateField(auto_now_add=True, editable=False)
 
     def __str__(self):
@@ -80,7 +80,7 @@ class Person(models.Model):
     class Meta:
         ordering = ['last_name', 'first_name']
 
-class Position(models.Model):
+class Stanowisko(models.Model):
     """Model reprezentujący stanowisko osoby w bibliotece."""
     name = models.CharField(max_length=70, blank=False, null=False)
     description = models.TextField(blank=True, null=True)
