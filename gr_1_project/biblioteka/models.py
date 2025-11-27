@@ -78,9 +78,11 @@ class Osoba(models.Model):
         return f"Person: {self.first_name} {self.last_name}"
     
     class Meta:
+
         ordering = ['last_name', 'first_name']
 
 class Stanowisko(models.Model):
     """Model reprezentujący stanowisko osoby w bibliotece."""
     name = models.CharField(max_length=70, blank=False, null=False)
     description = models.TextField(blank=True, null=True)
+    
