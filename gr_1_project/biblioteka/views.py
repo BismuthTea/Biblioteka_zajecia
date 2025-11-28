@@ -2,8 +2,8 @@ from django.shortcuts import render #domyślny render nie jest potrzebny w widok
 from rest_framework import status # zbiór statusów HTTP np. 404notfound, 200ok, 201created
 from rest_framework.decorators import api_view # dekorator do definiowania widoków API
 from rest_framework.response import Response # klasa do tworzenia odpowiedzi API
-from .models import Book
-from .serializers import BookSerializer
+from .models import Book, Osoba, Stanowisko
+from .serializers import BookSerializer, OsobaSerializer, StanowiskoSerializer
 
 # określamy dostępne metody żądania dla tego endpointu
 @api_view(['GET', "POST"])
@@ -56,3 +56,91 @@ def book_detail(request, pk): # pk to parametr ścieżki URL, identyfikujący pr
     elif request.method == 'DELETE':
         book.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET', "POST", "DELETE"])
+def osoba_detail(request, pk):
+
+    try:
+        osoba = Osoba.objects.get(pk=pk)
+    except Osoba.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = OsobaSerializer(osoba)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        serializer = OsobaSerializer(osoba, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        osoba.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET', "POST"])
+def osoba_list(request):
+    if request.method == 'GET':
+        osoby = Osoba.objects.all()
+        serializer = OsobaSerializer(osoby, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        serializer = OsobaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+def osoba_search(request):
+    # W GET używamy query_params (to, co w URL po znaku ?)
+    search_criteria = request.query_params.get('search_criteria', None)
+
+    if search_criteria:
+
+        osoby = Osoba.objects.filter(last_name__icontains=search_criteria)
+    else:
+        osoby = Osoba.objects.all()
+
+    serializer = OsobaSerializer(osoby, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+   
+@api_view(['GET', "POST", "DELETE"])
+def stanowisko_detail(request, pk):
+    try:
+        stanowisko = Stanowisko.objects.get(pk=pk)
+    except Stanowisko.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = StanowiskoSerializer(stanowisko)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        serializer = StanowiskoSerializer(stanowisko, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        stanowisko.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+@api_view(['GET', "POST"])
+def stanowisko_list(request):
+    if request.method == 'GET':
+        stanowiska = Stanowisko.objects.all()
+        serializer = StanowiskoSerializer(stanowiska, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        serializer = StanowiskoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
