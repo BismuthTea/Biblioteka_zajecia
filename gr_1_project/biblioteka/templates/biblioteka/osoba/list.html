@@ -1,0 +1,14 @@
+{% extends "biblioteka\base.html" %}
+
+{% block title %}Lista obiektów Osoba{% endblock %}
+
+{% block content %}
+Aktualnie w mojej bazie dodane są poniższe obiekty Osoba.
+{% for osoba in osoby %}
+<p>Osoba: {{ osoba.first_name }} {{ osoba.last_name }}</p>
+<p>Płeć: {{ osoba.sex }}</p>
+<p>Data dodania: {{ osoba.entry_date }}</p>
+<p>Stanowisko: {{ osoba.Stanowisko }}</p>
+<hr>
+{% endfor %}
+{% endblock %}
