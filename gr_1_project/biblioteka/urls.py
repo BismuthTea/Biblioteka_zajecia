@@ -11,4 +11,7 @@ urlpatterns = [
     path('osoby/search/', views.osoba_search),
     path('stanowiska/', views.stanowisko_list),
     path('stanowiska/<int:pk>/', views.stanowisko_detail),
+
+    path('welcome/', views.welcome_view),
+    path("html/osoby/", views.osoba_list_html, name="osoba-list"),
 ]

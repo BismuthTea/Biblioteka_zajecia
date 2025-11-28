@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render #domyślny render nie jest potrzebny w widokach API
 from rest_framework import status # zbiór statusów HTTP np. 404notfound, 200ok, 201created
 from rest_framework.decorators import api_view # dekorator do definiowania widoków API
@@ -70,10 +71,10 @@ def osoba_detail(request, pk):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        serializer = OsobaSerializer(osoba, data=request.data)
+        serializer = OsobaSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
@@ -94,7 +95,7 @@ def osoba_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+@api_view(['GET'])
 def osoba_search(request):
     # W GET używamy query_params (to, co w URL po znaku ?)
     search_criteria = request.query_params.get('search_criteria', None)
@@ -103,7 +104,7 @@ def osoba_search(request):
 
         osoby = Osoba.objects.filter(last_name__icontains=search_criteria)
     else:
-        osoby = Osoba.objects.all()
+        osoby = Response(status=status.HTTP_400_BAD_REQUEST)
 
     serializer = OsobaSerializer(osoby, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -120,7 +121,7 @@ def stanowisko_detail(request, pk):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        serializer = StanowiskoSerializer(stanowisko, data=request.data)
+        serializer = StanowiskoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
@@ -144,3 +145,25 @@ def stanowisko_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    from django.http import HttpResponse
+import datetime
+
+
+def welcome_view(request):
+    now = datetime.datetime.now()
+    html = f"""
+        <html><body>
+        Witaj użytkowniku! </br>
+        Aktualna data i czas na serwerze: {now}.
+        </body></html>"""
+    return HttpResponse(html)
+
+def osoba_list_html(request):
+    # pobieramy wszystkie obiekty Osoba z bazy poprzez QuerySet
+    osoby = Osoba.objects.all()
+    #return HttpResponse(osoby)
+    #mapujemy dane do szablonu HTML i zwracamy odpowiedź
+    return render(request,
+                  "biblioteka/osoba/list.html",
+                  {'osoby': osoby})
