@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book, Author, Genre, MONTHS, BOOK_FORMATS, Osoba, Stanowisko
+from .models import Book, Author, Genre, MONTHS, BOOK_FORMATS, Osoba, stanowisko
 from rest_framework.validators import UniqueTogetherValidator
 
 # class BookSerializer(serializers.Serializer):
@@ -144,5 +144,5 @@ class OsobaSerializer(serializers.ModelSerializer):
     
 class StanowiskoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Stanowisko
+        model = stanowisko
         fields = "__all__"

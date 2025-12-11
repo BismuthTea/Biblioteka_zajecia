@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect #domyślny render nie jest potrzeb
 from rest_framework import status # zbiór statusów HTTP np. 404notfound, 200ok, 201created
 from rest_framework.decorators import api_view # dekorator do definiowania widoków API
 from rest_framework.response import Response # klasa do tworzenia odpowiedzi API
-from .models import Book, Osoba, Stanowisko
+from .models import Book, Osoba, stanowisko
 from .serializers import BookSerializer, OsobaSerializer, StanowiskoSerializer
 from django.http import Http404, HttpResponse
 from .forms import OsobaForm
@@ -135,7 +135,7 @@ def stanowisko_detail(request, pk):
 @api_view(['GET', "POST"])
 def stanowisko_list(request):
     if request.method == 'GET':
-        stanowiska = Stanowisko.objects.all()
+        stanowiska = stanowisko.objects.all()
         serializer = StanowiskoSerializer(stanowiska, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -189,7 +189,7 @@ def osoba_detail_html(request, id):
 
 
 def osoba_create_html(request):
-    stanowiska = Stanowisko.objects.all()  # pobieramy listę stanowisk z bazy
+    stanowiska = stanowisko.objects.all()  # pobieramy listę stanowisk z bazy
 
     if request.method == "GET":
         return render(request, "biblioteka/osoba/create.html", {'stanowiska': stanowiska})
@@ -203,7 +203,7 @@ def osoba_create_html(request):
             # pobieramy obiekt stanowiska
             try:
                 stanowisko_obj = Stanowisko.objects.get(id=stanowisko_id)
-            except Stanowisko.DoesNotExist:
+            except stanowisko.DoesNotExist:
                 error = "Wybrane stanowisko nie istnieje."
                 return render(request, "biblioteka/osoba/create.html", {'error': error, 'stanowiska': stanowiska})
 
@@ -212,7 +212,7 @@ def osoba_create_html(request):
                 first_name=first_name,
                 last_name=last_name,
                 sex=sex,
-                Stanowisko=stanowisko_obj
+                stanowisko=stanowisko_obj
             )
             return redirect('osoba-list')
         else:

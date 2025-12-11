@@ -71,7 +71,7 @@ class Osoba(models.Model):
     first_name = models.CharField(max_length=50, blank=False, null=False)
     last_name = models.CharField(max_length=50, blank=False, null=False)
     sex = models.IntegerField(choices=PLCIE.choices, default=PLCIE.choices[2][0])
-    Stanowisko = models.ForeignKey('Stanowisko', on_delete=models.CASCADE)
+    stanowisko = models.ForeignKey('stanowisko', on_delete=models.CASCADE)
     entry_date = models.DateField(auto_now_add=True, editable=False)
 
     def __str__(self):
@@ -81,7 +81,7 @@ class Osoba(models.Model):
 
         ordering = ['last_name', 'first_name']
 
-class Stanowisko(models.Model):
+class stanowisko(models.Model):
     """Model reprezentujący stanowisko osoby w bibliotece."""
     name = models.CharField(max_length=70, blank=False, null=False)
     description = models.TextField(blank=True, null=True)

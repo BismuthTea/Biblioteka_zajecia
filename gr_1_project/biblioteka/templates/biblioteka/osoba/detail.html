@@ -6,7 +6,7 @@
 <p>Osoba: {{ osoba.first_name }} {{ osoba.last_name }}</p>
 <p>Płeć: {{ osoba.sex }}</p>
 <p>Data dodania: {{ osoba.entry_date }}</p>
-<p>Stanowisko: {{ osoba.stanowisko }}</p>
+<p>Stanowisko: {{ osoba.Stanowisko }}</p>
 <form method="post">
     {% csrf_token %}
     <button type="submit" onclick="return confirm('Czy na pewno chcesz usunąć tę osobę?');">
