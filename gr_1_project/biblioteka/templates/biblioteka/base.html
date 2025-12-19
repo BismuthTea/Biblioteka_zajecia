@@ -8,6 +8,12 @@
     <body>
         <div id="header" >
             Pierwsza aplikacja Django
+            {% if request.user.is_authenticated %}
+                Witaj, {{ request.user.username }}!
+                <a href="{% url 'user-logout' %}">Wyloguj</a>
+            {% else %}
+                <a href="{% url 'user-login' %}">Zaloguj</a>
+            {% endif %}
         </div>
         <hr/>
         <div id="content">

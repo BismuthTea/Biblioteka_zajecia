@@ -1,12 +1,18 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect #domyślny render nie jest potrzebny w widokach API
 from rest_framework import status # zbiór statusów HTTP np. 404notfound, 200ok, 201created
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication,TokenAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view # dekorator do definiowania widoków API
 from rest_framework.response import Response # klasa do tworzenia odpowiedzi API
 from .models import Book, Osoba, stanowisko
 from .serializers import BookSerializer, OsobaSerializer, StanowiskoSerializer
 from django.http import Http404, HttpResponse
 from .forms import OsobaForm
+from django.contrib.auth import authenticate, login, logout
+from rest_framework.authtoken.models import Token
+
 # określamy dostępne metody żądania dla tego endpointu
 @api_view(['GET', "POST"])
 # metoda otrzymuje dokorator api_view, który przekształca ją w widok API
@@ -28,31 +34,49 @@ def book_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # zwracamy odpowiedź z błędami walidacji oraz statusem 400 Bad Request
 # nie potrzeba else bo intendacja
 
-@api_view(['GET', 'PUT', 'DELETE']) # określamy dostępne metody żądania dla tego endpointu
-def book_detail(request, pk): # pk to parametr ścieżki URL, identyfikujący primary key obiektu Book
-
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def book_detail(request, pk):
     """
     :param request: obiekt DRF Request
     :param pk: id obiektu Book
     :return: Response (with status and/or object/s data)
     """
-    try: # try except obsługuje błąd 404 Not Found, gdy obiekt o podanym pk nie istnieje
+    
+    try:
         book = Book.objects.get(pk=pk)
     except Book.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND) 
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     """
     Zwraca pojedynczy obiekt typu Book.
     """
     if request.method == 'GET':
         serializer = BookSerializer(book)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
-    elif request.method == 'PUT':
+
+@api_view(['PUT', 'DELETE'])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
+def book_update_delete(request, pk):
+
+    """
+    :param request: obiekt DRF Request
+    :param pk: id obiektu Book
+    :return: Response (with status and/or object/s data)
+    """
+    try:
+        book = Book.objects.get(pk=pk)
+    except Book.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'PUT':
         serializer = BookSerializer(book, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_202_ACCEPTED) # statusem 202 Accepted albo 200 OK zależy od API designu
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
@@ -160,6 +184,9 @@ def welcome_view(request):
         </body></html>"""
     return HttpResponse(html)
 
+from django.contrib.auth.decorators import login_required
+
+@login_required(login_url='user-login')
 def osoba_list_html(request):
     # pobieramy wszystkie obiekty Osoba z bazy poprzez QuerySet
     osoby = Osoba.objects.all()
@@ -231,3 +258,38 @@ def osoba_create_django_form(request):
     return render(request,
                   "biblioteka/osoba/create_django.html",
                   {'form': form})
+
+def user_login(request):
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('osoba-list')
+        else:
+            return render(request, 'biblioteka/login.html', {'error': 'Nieprawidłowe dane'})
+    return render(request, 'biblioteka/login.html')
+
+def user_logout(request):
+    logout(request)
+    return redirect('user-login')
+
+def drf_token_login(request):
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(username=username, password=password)
+        if user:
+            token, created = Token.objects.get_or_create(user=user)
+            # zapisujemy token w sesji
+            request.session['token'] = token.key
+            request.session['user_id'] = user.id
+            return redirect('osoba-list')
+        else:
+            return render(request, 'biblioteka/login.html', {'error': 'Nieprawidłowe dane'})
+    return render(request, 'biblioteka/login.html')
+
+def drf_token_logout(request):
+    request.session.flush()
+    return redirect('drf-token-login')
